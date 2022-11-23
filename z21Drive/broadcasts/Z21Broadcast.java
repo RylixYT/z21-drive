@@ -1,7 +1,7 @@
 package z21Drive.broadcasts;
 
 /**
- * Base class for Z21 broadcasts.
+ * Base class for z21Drive.Z21 broadcasts.
  */
 public abstract class Z21Broadcast {
     protected byte [] byteRepresentation;

@@ -1,7 +1,7 @@
 package z21Drive.responses;
 
 /**
- * Base class for Z21 responses.
+ * Base class for z21Drive.Z21 responses.
  */
 public abstract class Z21Response {
     protected byte [] byteRepresentation;

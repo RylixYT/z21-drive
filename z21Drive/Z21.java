@@ -18,7 +18,7 @@ import z21Drive.broadcasts.*;
 import z21Drive.responses.*;
 
 /**
- * Main class in this library which represents Z21 and handles all communication with it.
+ * Main class in this library which represents z21Drive.Z21 and handles all communication with it.
  * @author grizeldi
  */
 public class Z21 implements Runnable{
@@ -31,23 +31,23 @@ public class Z21 implements Runnable{
     private DatagramSocket socket;
 	private final Timer keepAliveTimer;
 
-    private Z21() {
-        Logger.getLogger("Z21 init").info("Z21 initializing");
+    protected Z21() {
+        Logger.getLogger("z21Drive.Z21 init").info("z21Drive.Z21 initializing");
         Thread listenerThread = new Thread(this);
         try {
             socket = new DatagramSocket(port);
         }catch (SocketException e){
-            Logger.getLogger("Z21 init").warning("Failed to open socket to Z21..." + e);
+            Logger.getLogger("z21Drive.Z21 init").warning("Failed to open socket to z21Drive.Z21..." + e);
         }
         listenerThread.setDaemon(true);
         listenerThread.start();
         addBroadcastListener(new Z21BroadcastListener() {
             @Override
-            public void onBroadCast(BroadcastTypes type, Z21Broadcast broadcast) {
+            public void onBroadCast(z21Drive.broadcasts.BroadcastTypes type, Z21Broadcast broadcast) {
                 if (type == BroadcastTypes.LAN_X_UNKNOWN_COMMAND)
-                    Logger.getLogger("Z21 monitor").warning("Z21 reported receiving an unknown command.");
+                    Logger.getLogger("z21Drive.Z21 monitor").warning("z21Drive.Z21 reported receiving an unknown command.");
                 else
-                    Logger.getLogger("Z21 monitor").severe("Broadcast delivery messed up. Please report immediately to GitHub issues what have you done.");
+                    Logger.getLogger("z21Drive.Z21 monitor").severe("Broadcast delivery messed up. Please report immediately to GitHub issues what have you done.");
             }
 
             @Override
@@ -91,14 +91,14 @@ public class Z21 implements Runnable{
             packet.setPort(port);
             socket.send(packet);
         }catch (IOException e){
-            Logger.getLogger("Z21 sender").warning("Failed to send message to z21... " + e);
+            Logger.getLogger("z21Drive.Z21 sender").warning("Failed to send message to z21... " + e);
             return false;
         }
         return true;
     }
 
     /**
-     * Used as a listener for any packets sent by Z21.
+     * Used as a listener for any packets sent by z21Drive.Z21.
      * Also delivers packets to responseListeners.
      * @see Z21ResponseListener
      * @see Z21BroadcastListener
@@ -133,7 +133,7 @@ public class Z21 implements Runnable{
                 }
             }catch (IOException e){
                 if (!exit)
-                    Logger.getLogger("Z21 Receiver").warning("Failed to get a message from z21... " + e);
+                    Logger.getLogger("z21Drive.Z21 Receiver").warning("Failed to get a message from z21... " + e);
             }
         }
     }
@@ -160,7 +160,7 @@ public class Z21 implements Runnable{
      * Used to gracefully stop all communications.
      */
     public void shutdown(){
-        Logger.getLogger("Z21").info("Shutting down all communication.");
+        Logger.getLogger("z21Drive.Z21").info("Shutting down all communication.");
         sendActionToZ21(new Z21ActionLanLogoff());
         keepAliveTimer.stop();
         exit = true;
@@ -185,8 +185,8 @@ class PacketConverter {
 
     /**
      * Here the magic of turning bytes into objects happens.
-     * @param packet UDP packet received from Z21
-     * @return Z21 response object which represents the byte array.
+     * @param packet UDP packet received from z21Drive.Z21
+     * @return z21Drive.Z21 response object which represents the byte array.
      */
     static Z21Response responseFromPacket(DatagramPacket packet){
         byte [] array = packet.getData();
@@ -207,8 +207,8 @@ class PacketConverter {
 
     /**
      * Same as for responses, but for broadcasts. See method responseFromPacket(DatagramPacket packet).
-     * @param packet UDP packet received from Z21
-     * @return Z21 broadcast object which represents the broadcast sent from Z21.
+     * @param packet UDP packet received from z21Drive.Z21
+     * @return z21Drive.Z21 broadcast object which represents the broadcast sent from z21Drive.Z21.
      */
     static Z21Broadcast broadcastFromPacket(DatagramPacket packet){
         byte [] data = packet.getData();
@@ -221,7 +221,7 @@ class PacketConverter {
         if (data[data[0] + 1] != 0){
             //We got two messages in one packet.
             //Don't know yet what to do. TODO
-            Logger.getLogger("Z21 Receiver").info("Received two messages in one packet. Multiple messages not supported yet. Please report to github.");
+            Logger.getLogger("z21Drive.Z21 Receiver").info("Received two messages in one packet. Multiple messages not supported yet. Please report to github.");
         }
 
         if (header1 == 0x40 && header2 == 0x00 && xHeader == 239)
@@ -237,7 +237,7 @@ class PacketConverter {
         else if (header1 == 0x40 && header2 == 0x00 && xHeader == 0x61 && (data[5] & 255) == 0x08)
             return new Z21BroadcastLanXShortCircuit(newArray);
         else {
-            Logger.getLogger("Z21 Receiver").warning("Received unknown message. Array:");
+            Logger.getLogger("z21Drive.Z21 Receiver").warning("Received unknown message. Array:");
             for (byte b : newArray)
                 System.out.print("0x" + String.format("%02X ", b));
             System.out.println();
